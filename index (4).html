@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persuasion Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#1a1040; --night2:#2a1a66; --ink:#1d1838; --muted:#5d5878; --card:#fff; --line:#e6e1f5;
+  --eth:#2f7bff; --ethbg:#e3eeff; --ethd:#1a4fb8;
+  --pat:#ff3d7f; --patbg:#ffe4ee; --patd:#c41656;
+  --log:#14b86a; --logbg:#dff7ea; --logd:#0b7d47;
+  --gold:#ffc83d; --orange:#ff8a1f; --cyan:#2ee6ff; --purple:#8b5cff;
+  --good:#16a35a; --bad:#e0313b; --hl:#fff3a6;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,-apple-system,sans-serif;color:var(--ink);font-size:18px;line-height:1.55;min-height:100vh;
+  background:linear-gradient(135deg,#2a1a66 0%,#5b2bb5 35%,#c13fa0 70%,#ff7a59 100%);background-attachment:fixed;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
+  background-image:radial-gradient(circle,#fff 1.2px,transparent 1.6px),radial-gradient(circle,#fff 1px,transparent 1.4px);
+  background-size:90px 90px,140px 140px;background-position:0 0,40px 60px;animation:drift 60s linear infinite}
+@keyframes drift{to{background-position:900px 900px,-700px 1000px}}
+button{font:inherit;cursor:pointer}
+header{position:sticky;top:0;z-index:30;background:rgba(20,10,55,.92);backdrop-filter:blur(6px);color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{font-size:1.8rem}
+.brand h1{font-family:'Baloo 2';margin:0;font-size:1.3rem;line-height:1;background:linear-gradient(90deg,var(--gold),#ff9de2,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip{display:inline-block;background:var(--gold);color:#3a2a00;font-weight:900;font-size:.7rem;padding:1px 8px;border-radius:999px}
+.hud{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.12);border-radius:999px;padding:3px 10px;font-weight:900;font-size:.88rem;display:flex;align-items:center;gap:4px}
+.stat.xp{background:linear-gradient(90deg,#8b5cff,#2ee6ff)}
+.stat.coin{background:rgba(255,200,61,.25);color:var(--gold)}
+.voicebar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.8rem;font-weight:800}
+.seg{display:flex;background:rgba(255,255,255,.14);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:#fff;font-weight:800;padding:4px 10px;border-radius:999px;font-size:.8rem}
+.seg button.on{background:#fff;color:var(--night)}
+.iconbtn{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:4px 10px;font-weight:800;font-size:.85rem}
+.stopbtn{border:0;background:var(--pat);color:#fff;font-weight:800;border-radius:999px;padding:4px 10px;font-size:.82rem;display:none}
+.stopbtn.show{display:inline-block}
+main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:18px 16px 60px}
+.card{background:var(--card);border-radius:24px;box-shadow:0 12px 40px rgba(20,8,60,.35);padding:22px;border:4px solid #fff}
+.center{max-width:780px;margin:0 auto}
+h2{font-family:'Baloo 2';color:var(--night2);font-size:1.85rem;margin:0 0 6px;line-height:1.15}
+h3{font-family:'Baloo 2';color:var(--purple);margin:0 0 6px;font-size:1.25rem}
+.muted{color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.big{border:0;border-radius:18px;padding:13px 24px;font-weight:900;font-size:1.1rem;color:#fff;background:linear-gradient(135deg,#8b5cff,#5b2bb5);box-shadow:0 6px 0 #3b1a85,0 10px 20px rgba(91,43,181,.35);transition:transform .08s}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 #3b1a85}
+.big.gold{background:linear-gradient(135deg,#ffd75e,#ff9f1f);color:#3a2300;box-shadow:0 6px 0 #c06d00}
+.big.pink{background:linear-gradient(135deg,#ff6aa2,#ff3d7f);box-shadow:0 6px 0 #b0124c}
+.big:disabled{opacity:.45;cursor:not-allowed}
+.ghost{border:3px solid var(--purple);background:#fff;color:var(--purple);border-radius:14px;padding:7px 14px;font-weight:900;font-size:.95rem}
+.ghost:disabled{opacity:.4}
+.speak{border:0;background:#efe9ff;color:var(--night2);border-radius:999px;padding:6px 14px;font-weight:900;font-size:.9rem;display:inline-flex;align-items:center;gap:6px}
+.speak:hover{background:#e2d8ff}
+.speak.sm{padding:3px 10px;font-size:.8rem}
+input[type=text]{font:inherit;font-size:1.15rem;padding:12px 14px;border-radius:14px;border:3px solid var(--line);width:100%;max-width:360px}
+input[type=text]:focus{outline:none;border-color:var(--purple)}
+.tip{background:#fff7d6;border-left:6px solid var(--gold);border-radius:12px;padding:10px 14px;margin:12px 0}
+.E{color:var(--eth)} .P{color:var(--pat)} .Lg{color:var(--log)}
+.tagE,.tagP,.tagL{display:inline-block;border-radius:8px;padding:1px 9px;font-weight:900;font-size:.85rem;color:#fff}
+.tagE{background:var(--eth)} .tagP{background:var(--pat)} .tagL{background:var(--log)}
+
+/* start / avatar */
+.title-hero{text-align:center}
+.title-hero .glow{font-family:'Baloo 2';font-size:2.6rem;font-weight:800;line-height:1;margin:6px 0;background:linear-gradient(90deg,#5b2bb5,#ff3d7f,#ff8a1f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.trio{display:flex;justify-content:center;gap:14px;font-size:3rem;margin:6px 0}
+.trio span{animation:bob 2.4s ease-in-out infinite}
+.trio span:nth-child(2){animation-delay:.3s}.trio span:nth-child(3){animation-delay:.6s}
+@keyframes bob{50%{transform:translateY(-10px)}}
+.avatars{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.avatars button{font-size:2rem;width:60px;height:60px;border-radius:18px;border:3px solid var(--line);background:#fff;transition:transform .15s}
+.avatars button.on{border-color:var(--purple);background:#f1ebff;transform:scale(1.12);box-shadow:0 0 0 4px #e0d4ff}
+
+/* map */
+.map{display:grid;gap:14px}
+.node{display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;border-radius:22px;padding:14px 16px;border:4px solid #fff;color:#fff;text-align:left;box-shadow:0 8px 0 rgba(0,0,0,.18);transition:transform .15s}
+.node:hover:not(:disabled){transform:translateY(-3px)}
+.node .ic{font-size:2.7rem;background:rgba(255,255,255,.22);border-radius:20px;width:76px;height:76px;display:flex;align-items:center;justify-content:center}
+.node .nm{font-family:'Baloo 2';font-size:1.4rem;font-weight:800;line-height:1.1}
+.node .ds{font-size:.92rem;opacity:.95}
+.node .stt{font-weight:900;font-size:.9rem;background:rgba(0,0,0,.2);border-radius:999px;padding:4px 12px;white-space:nowrap}
+.node:disabled{filter:grayscale(.85) brightness(.85);cursor:not-allowed}
+.n1{background:linear-gradient(135deg,#8b5cff,#5b2bb5)}
+.n2{background:linear-gradient(135deg,#2ee6ff,#2f7bff)}
+.n3{background:linear-gradient(135deg,#ff9f1f,#ff3d7f)}
+.n4{background:linear-gradient(135deg,#3a1d6e,#e0313b)}
+.n5{background:linear-gradient(135deg,#ffd75e,#14b86a)}
+.rankbar{height:16px;background:#ece6ff;border-radius:99px;overflow:hidden;margin:6px 0}
+.rankbar div{height:100%;background:linear-gradient(90deg,#8b5cff,#2ee6ff,#14b86a);transition:width .6s}
+
+/* academy */
+.prog{display:flex;gap:6px;margin:6px 0 14px}
+.prog span{flex:1;height:9px;border-radius:99px;background:var(--line)}
+.prog span.on{background:linear-gradient(90deg,var(--purple),var(--pat))}
+.hero{border-radius:22px;padding:16px;color:#fff;display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:center;margin-bottom:12px}
+.hero .face{font-size:4.2rem;text-align:center;background:rgba(255,255,255,.22);border-radius:22px;height:110px;display:flex;align-items:center;justify-content:center;animation:bob 2.6s ease-in-out infinite}
+.hero .hn{font-family:'Baloo 2';font-size:1.7rem;font-weight:800;line-height:1}
+.hero .hw{font-weight:800;opacity:.95}
+.hero.e{background:linear-gradient(135deg,#2f7bff,#1a4fb8)}
+.hero.p{background:linear-gradient(135deg,#ff6aa2,#c41656)}
+.hero.l{background:linear-gradient(135deg,#2bd987,#0b7d47)}
+.hero.all{background:linear-gradient(135deg,#2f7bff,#ff3d7f,#14b86a)}
+@media (max-width:560px){.hero{grid-template-columns:1fr;text-align:center}.hero .face{height:90px}}
+.clues{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.clues span{border-radius:10px;padding:3px 10px;font-weight:800;font-size:.9rem}
+.cl-e span{background:var(--ethbg);color:var(--ethd)} .cl-p span{background:var(--patbg);color:var(--patd)} .cl-l span{background:var(--logbg);color:var(--logd)}
+.ex{background:#f7f4ff;border-radius:14px;padding:10px 14px;margin:8px 0;font-size:1.05rem;border:2px dashed #d8ccff}
+.trio3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+@media (max-width:640px){.trio3{grid-template-columns:1fr}}
+.mini{border-radius:16px;padding:12px;color:#fff;font-weight:700}
+.mini b{font-family:'Baloo 2';font-size:1.25rem;display:block}
+
+/* questions */
+.qcard{position:relative}
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.qnum{font-family:'Baloo 2';font-weight:800;color:var(--night2);font-size:1.15rem}
+.combo{font-family:'Baloo 2';font-weight:800;color:#fff;background:linear-gradient(90deg,#ff8a1f,#ff3d7f);border-radius:999px;padding:2px 12px;font-size:1rem;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.timer{font-weight:900;color:var(--purple);font-size:.95rem}
+.stem{font-size:1.15rem;font-weight:800;margin:8px 0}
+.quote{background:#f4f0ff;border-left:6px solid var(--purple);padding:10px 14px;border-radius:10px;font-size:1.12rem;font-weight:700;margin:8px 0}
+.choices{display:flex;flex-direction:column;gap:9px;margin:10px 0 12px}
+.choice{display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:center;text-align:left;border:3px solid var(--line);background:#fff;border-radius:16px;padding:10px 12px;font-size:1.03rem;color:var(--ink);transition:all .15s}
+.choice:hover:not(:disabled){border-color:var(--purple);transform:translateX(3px)}
+.choice .let{width:34px;height:34px;border-radius:12px;background:#efe9ff;color:var(--night2);font-weight:900;display:flex;align-items:center;justify-content:center}
+.choice.sel{border-color:var(--purple);background:#f3eeff}
+.choice.sel .let{background:var(--purple);color:#fff}
+.choice.isright{border-color:var(--good);background:#e2f6ea}
+.choice.isright .let{background:var(--good);color:#fff}
+.choice.iswrong{border-color:var(--bad);background:#fde7e8}
+.choice.iswrong .let{background:var(--bad);color:#fff}
+.choice.zapped{opacity:.3;text-decoration:line-through}
+.choice:disabled{cursor:default}
+.heroBtns{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+@media (max-width:560px){.heroBtns{grid-template-columns:1fr}}
+.hb{border:0;border-radius:20px;padding:14px 8px;color:#fff;font-family:'Baloo 2';font-size:1.35rem;font-weight:800;line-height:1.1;box-shadow:0 6px 0 rgba(0,0,0,.25);transition:transform .1s}
+.hb small{display:block;font-family:Nunito;font-size:.8rem;font-weight:800;opacity:.95}
+.hb .em{font-size:2.2rem;display:block}
+.hb:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.hb.e{background:linear-gradient(135deg,#4b8fff,#1a4fb8)} .hb.p{background:linear-gradient(135deg,#ff6aa2,#c41656)} .hb.l{background:linear-gradient(135deg,#2bd987,#0b7d47)}
+.hb.dim{opacity:.35}
+.hb.ring{outline:5px solid var(--gold);outline-offset:2px}
+.fb{border-radius:16px;padding:12px 16px;margin:10px 0;font-weight:700}
+.fb.good{background:#e2f6ea;border:3px solid var(--good)}
+.fb.bad{background:#fde7e8;border:3px solid var(--bad)}
+.fb strong{font-family:'Baloo 2';font-size:1.2rem}
+.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+.powers{display:flex;gap:8px;flex-wrap:wrap}
+.pw{border:3px solid var(--gold);background:#fffbe9;color:#7a5200;border-radius:14px;padding:5px 12px;font-weight:900;font-size:.88rem}
+.pw:disabled{opacity:.4}
+.lockbtn{width:100%}
+.meter{height:12px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.meter div{height:100%;background:linear-gradient(90deg,var(--purple),var(--pat),var(--orange));transition:width .5s}
+
+/* ads */
+.ad{border-radius:22px;padding:18px;margin:6px 0 10px;text-align:center;border:4px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,.15);color:#fff}
+.ad .adtitle{font-family:'Baloo 2';font-size:1.6rem;font-weight:800;line-height:1.1}
+.ad .adbig{font-size:3.6rem;line-height:1.1}
+.ad .line{font-weight:800;font-size:1.08rem;margin:6px 0}
+.ad .fine{font-size:.8rem;opacity:.85}
+.ad1{background:linear-gradient(135deg,#ff9a9e,#c94b7c)}
+.ad2{background:linear-gradient(135deg,#43c6ff,#2f5bd8)}
+.ad3{background:linear-gradient(135deg,#1f1f3a,#14b86a)}
+.ad4{background:linear-gradient(135deg,#ffb347,#ff5e62)}
+.ad4 .bub{background:#fff;color:var(--ink);border-radius:16px;padding:8px 12px;margin:8px auto;max-width:520px;font-weight:700;text-align:left}
+
+/* boss */
+.bosshud{border-radius:20px;padding:12px 16px;margin-bottom:12px;background:linear-gradient(135deg,#2a0f4d,#7a1f3d);color:#fff;display:grid;grid-template-columns:80px 1fr auto;gap:12px;align-items:center}
+.bossface{font-size:3.6rem;text-align:center;transition:transform .2s}
+.bossface.hit{animation:hit .5s}
+@keyframes hit{20%{transform:translateX(-10px) rotate(-8deg) scale(.9);filter:brightness(2)}40%{transform:translateX(10px) rotate(8deg)}60%{transform:translateX(-6px)}100%{transform:none}}
+.hp{height:18px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;border:2px solid rgba(255,255,255,.5)}
+.hp div{height:100%;background:linear-gradient(90deg,#ff3d7f,#ff8a1f,#ffc83d);transition:width .6s}
+.hearts{font-size:1.5rem;letter-spacing:2px}
+.shake{animation:sh .4s}
+@keyframes sh{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+.flashred{position:fixed;inset:0;background:rgba(224,49,59,.35);pointer-events:none;z-index:65;animation:fadeout .5s forwards}
+@keyframes fadeout{to{opacity:0}}
+.quizwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.ppanel{position:sticky;top:78px;max-height:calc(100vh - 96px);overflow:auto;padding:16px}
+.ppanel .tools{position:sticky;top:-16px;background:#fff;padding:6px 0 8px;z-index:2;display:flex;gap:8px;flex-wrap:wrap;border-bottom:2px dashed var(--line);margin-bottom:6px}
+.togglep,.closep{display:none!important}
+@media (max-width:860px){.quizwrap{grid-template-columns:1fr}.ppanel{position:fixed;inset:70px 10px 10px 10px;max-height:none;z-index:40;display:none}.ppanel.open{display:block}.togglep,.closep{display:inline-flex!important}}
+.ptitle{font-family:'Baloo 2';font-size:1.5rem;color:var(--night2);margin:0;line-height:1.15}
+.para{display:grid;grid-template-columns:34px 1fr;gap:8px;padding:8px 10px;border-radius:12px;transition:background .25s}
+.para .num{font-family:'Baloo 2';font-weight:800;color:#fff;background:var(--purple);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;margin-top:3px}
+.para p{margin:0 0 4px}
+.para.reading{background:var(--hl)}
+.para.flash{animation:flash 1.6s}
+@keyframes flash{0%,60%{background:#e7dcff}100%{background:transparent}}
+
+/* effects & victory */
+.pop{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);font-family:'Baloo 2';font-size:2.6rem;font-weight:800;pointer-events:none;animation:pop 1.1s forwards;z-index:60;color:#fff;text-shadow:0 3px 0 #5b2bb5,0 0 20px #ff9de2}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-20%) scale(.5)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-120%) scale(1)}}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
+.bdg{border-radius:18px;padding:12px;text-align:center;border:3px solid var(--line);background:#faf8ff}
+.bdg .bi{font-size:2.4rem}
+.bdg .bn{font-family:'Baloo 2';font-weight:800;line-height:1.1}
+.bdg .bd{font-size:.8rem;color:var(--muted)}
+.bdg.got{border-color:var(--gold);background:linear-gradient(135deg,#fff8d6,#ffe9f2);box-shadow:0 0 0 3px #ffeaa0}
+.bdg:not(.got){filter:grayscale(1);opacity:.55}
+.acc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+@media (max-width:560px){.acc{grid-template-columns:1fr}}
+.acc div{border-radius:16px;padding:10px;color:#fff;text-align:center;font-weight:800}
+.acc b{font-family:'Baloo 2';font-size:1.8rem;display:block;line-height:1}
+.toast{position:fixed;right:16px;bottom:16px;z-index:75;background:linear-gradient(135deg,#ffd75e,#ff9f1f);color:#3a2300;border-radius:18px;padding:12px 16px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:slidein .4s, fadeout .6s 3s forwards}
+@keyframes slidein{from{transform:translateY(40px);opacity:0}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:70}
+footer{position:relative;z-index:1;text-align:center;font-size:.8rem;color:#fff;opacity:.85;padding:10px}
+footer button{background:none;border:0;color:#fff;text-decoration:underline;font-size:.8rem}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="logo">⚔️</span>
+    <div><h1>Persuasion Quest</h1><span class="chip">Grade 6 · Rhetorical Appeals</span></div></div>
+  <div class="hud" id="hud"></div>
+  <div class="voicebar">
+    <span>🔊</span>
+    <div class="seg" id="voiceSeg"><button data-v="female" class="on">Female</button><button data-v="male">Male</button><button data-v="mixed">Mixed</button></div>
+    <div class="seg" id="rateSeg"><button data-r="0.8">Slow</button><button data-r="0.95" class="on">Normal</button></div>
+    <button class="iconbtn" id="sfxBtn" onclick="toggleSfx()">🎵 On</button>
+    <button class="stopbtn" id="stopBtn" onclick="stopSpeech()">■ Stop</button>
+  </div>
+</header>
+<main id="app"></main>
+<footer>Florida B.E.S.T. Grade 6 ELA · ELA.6.R.3.4 · <button onclick="teacherReset()">Teacher reset</button></footer>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ===================== SETTINGS ===================== */
+const TEACHER_PIN = "1234";            // change to your own PIN
+const STORE = "persuasionQuest_v1_";
+const AVATARS = ["🦊","🐯","🐼","🦄","🐸","🐙","🦖","🐺","🦉","🐬","🤖","🧙"];
+const RANKS = [[0,"Rookie Reader"],[120,"Appeal Apprentice"],[260,"Persuasion Pro"],[400,"Rhetoric Ranger"],[520,"Rhetoric Legend"]];
+
+/* ===================== ACADEMY ===================== */
+const ACADEMY = [
+ { title:"Welcome to the Academy!", hero:{cls:"all", face:"🛡️❤️🧠", name:"The Persuasion Squad", word:"Rhetorical appeals"},
+   say:"Welcome to the Academy! When authors want to persuade you, they make a claim. A claim is what the author wants you to believe or do. To convince you, they use three powerful tools called rhetorical appeals. The names come from ancient Greek. Ethos appeals to trust and credibility. Pathos appeals to emotions and feelings. Logos appeals to logic, facts, and reasons. You will see these appeals everywhere: in ads, speeches, commercials, and even when you ask your family for something! Meet the three heroes of the Persuasion Squad.",
+   html:`<p>When authors want to <strong>persuade</strong> you, they make a <strong>claim</strong>, which is what they want you to <em>believe</em> or <em>do</em>.</p>
+   <p>To win you over, they use three power tools called <strong>rhetorical appeals</strong>. The names come from ancient Greek:</p>
+   <div class="trio3">
+     <div class="mini" style="background:var(--eth)"><b>🛡️ ETHOS</b>Trust &amp; credibility<br><em>"Believe me because I'm trustworthy."</em></div>
+     <div class="mini" style="background:var(--pat)"><b>❤️ PATHOS</b>Emotions &amp; feelings<br><em>"Feel this!"</em></div>
+     <div class="mini" style="background:var(--log)"><b>🧠 LOGOS</b>Logic, facts &amp; reasons<br><em>"Here's the proof."</em></div></div>
+   <div class="tip">📺 You'll find appeals in <strong>ads, speeches, commercials, and essays</strong>, and even when you ask your family for a later bedtime!</div>` },
+ { title:"Hero 1: ETHOS", hero:{cls:"e", face:"🛡️", name:"Captain Credible", word:"ETHOS = Trust & Credibility"},
+   say:"Hero one: Ethos. Ethos is an appeal to credibility, which means trust. The author tries to show that they, or the people they quote, are trustworthy experts. Memory trick: Ethos sounds like ethics, and E is for Expert. Look for these clues: experts like doctors and scientists, job titles, years of experience, trusted organizations, celebrities or athletes, and phrases like, as a teacher, or, as someone who. Example: As a dentist for 20 years, I recommend brushing your teeth twice a day. Why does this work? We trust a dentist to know about teeth.",
+   html:`<p><strong>Ethos</strong> appeals to <strong>credibility</strong> (trust). The author shows that they, or the people they quote, can be <em>trusted</em>.</p>
+   <div class="tip">🧠 <strong>Memory trick:</strong> <span class="E"><strong>E</strong>thos</span> = <strong>E</strong>xpert. Also sounds like "<em>ethics</em>."</div>
+   <strong>🔍 Clues to look for:</strong>
+   <div class="clues cl-e"><span>doctors &amp; scientists</span><span>job titles</span><span>years of experience</span><span>trusted organizations</span><span>celebrities / athletes</span><span>"As a teacher…"</span><span>personal experience</span></div>
+   <div class="ex">💬 <em>"As a dentist for 20 years, I recommend brushing your teeth twice a day."</em><br><span class="muted">✔ We trust a dentist to know about teeth.</span></div>`,
+   check:{id:"ac1", tag:"E", q:"Quick check! Which sentence uses ETHOS?", c:["As a firefighter for 12 years, I can tell you that smoke alarms save lives.","Smoke alarms are on sale this week for only $10.","Imagine waking up to a house full of smoke and no way out!"], a:0,
+     ex:"A firefighter with 12 years of experience is an expert we can trust about fire safety. That's ethos!"} },
+ { title:"Hero 2: PATHOS", hero:{cls:"p", face:"❤️", name:"Heartstrike", word:"PATHOS = Emotions & Feelings"},
+   say:"Hero two: Pathos. Pathos is an appeal to emotion. The author tries to make you feel something, like sadness, fear, joy, pride, hope, or guilt, so you will agree. Memory trick: Pathos sounds like sympathy, and P is for Passion. Look for these clues: emotional or vivid words, short stories called anecdotes, sad or cute images, fear of something bad happening, the word imagine, and phrases like you deserve. Example: Imagine a tiny puppy shivering alone in the rain. Adopt a pet today. Why does this work? It makes us feel sad and want to help.",
+   html:`<p><strong>Pathos</strong> appeals to <strong>emotion</strong>. The author wants you to <em>feel</em> something (sad, scared, happy, proud, hopeful, or guilty) so you'll agree.</p>
+   <div class="tip">🧠 <strong>Memory trick:</strong> <span class="P"><strong>P</strong>athos</span> = <strong>P</strong>assion. Sounds like "sym<em>pathy</em>."</div>
+   <strong>🔍 Clues to look for:</strong>
+   <div class="clues cl-p"><span>emotional words</span><span>short stories (anecdotes)</span><span>cute or sad images</span><span>fear</span><span>"Imagine…"</span><span>"You deserve…"</span><span>pride &amp; hope</span></div>
+   <div class="ex">💬 <em>"Imagine a tiny puppy shivering alone in the rain. Adopt a pet today."</em><br><span class="muted">✔ It makes us feel sad and want to help.</span></div>`,
+   check:{id:"ac2", tag:"P", q:"Quick check! Which sentence uses PATHOS?", c:["Our shelter has cared for 400 cats since 2020.","Without your help, these little kittens will spend the winter cold, hungry, and alone.","Dr. Kim, an animal doctor, says cats should visit a vet once a year."], a:1,
+     ex:"Words like \"little,\" \"cold,\" \"hungry,\" and \"alone\" are meant to make you feel sad and want to help. That's pathos!"} },
+ { title:"Hero 3: LOGOS", hero:{cls:"l", face:"🧠", name:"Logic Bot", word:"LOGOS = Logic, Facts & Reasons"},
+   say:"Hero three: Logos. Logos is an appeal to logic. The author uses facts, numbers, and clear reasons to prove that the claim makes sense. Memory trick: Logos sounds like logic. Look for these clues: statistics and numbers, facts, research, studies show, cause and effect, comparisons, and step by step reasons. Example: Walking to school for 20 minutes a day adds up to about 60 hours of exercise in one school year. Why does this work? The math gives proof.",
+   html:`<p><strong>Logos</strong> appeals to <strong>logic</strong>. The author uses <em>facts, numbers, and clear reasons</em> to prove the claim makes sense.</p>
+   <div class="tip">🧠 <strong>Memory trick:</strong> <span class="Lg"><strong>Logos</strong></span> = <strong>Log</strong>ic.</div>
+   <strong>🔍 Clues to look for:</strong>
+   <div class="clues cl-l"><span>statistics &amp; numbers</span><span>facts</span><span>research</span><span>"Studies show…"</span><span>cause &amp; effect</span><span>comparisons</span><span>step-by-step reasons</span></div>
+   <div class="ex">💬 <em>"Walking to school for 20 minutes a day adds up to about 60 hours of exercise in one school year."</em><br><span class="muted">✔ The math gives proof.</span></div>`,
+   check:{id:"ac3", tag:"L", q:"Quick check! Which sentence uses LOGOS?", c:["You'll feel like a superstar in these new sneakers!","My favorite basketball player wears these sneakers.","These sneakers weigh 20 percent less than our old model, so you can run faster."], a:2,
+     ex:"A measurable fact (20 percent lighter) plus a reason (so you can run faster) is logic. That's logos!"} },
+ { title:"Combo Moves", hero:{cls:"all", face:"⚡", name:"Combo Moves", word:"Authors mix appeals!"},
+   say:"Combo moves. Strong authors often use more than one appeal in the same text, sometimes even in the same sentence. Ask yourself: What is the author mainly trying to do here? Build trust? Stir feelings? Or prove with facts? Also, numbers can show up in any appeal. Nine out of ten dentists recommend this toothpaste has a number, but its main purpose is to make you trust the experts, so it is mostly ethos. On tests, you may see questions like: Which appeal does the author use in paragraph 2? Why does the author include this quote? How does this detail support the author's claim? Always connect the appeal back to the claim. Now head to the map and start your quest!",
+   html:`<p>Strong authors use <strong>more than one appeal</strong>, sometimes in the same sentence! Ask: <em>What is the author MAINLY trying to do?</em></p>
+   <div class="trio3"><div class="mini" style="background:var(--eth)">🛡️ Build trust?</div><div class="mini" style="background:var(--pat)">❤️ Stir feelings?</div><div class="mini" style="background:var(--log)">🧠 Prove with facts?</div></div>
+   <div class="tip">⚠️ <strong>Tricky!</strong> "<em>9 out of 10 dentists recommend Brightsmile</em>" has a number, but its main purpose is to make you trust the <strong>experts</strong>, so it's mostly <span class="E"><strong>ethos</strong></span>.</div>
+   <strong>📝 Test questions sound like:</strong>
+   <ul style="margin:4px 0 0;padding-left:22px"><li>Which appeal does the author use in paragraph 2?</li><li>Why does the author include this quote?</li><li>How does this detail support the author's claim?</li></ul>
+   <p style="margin-bottom:0">💡 Always connect the appeal back to the <strong>claim</strong>.</p>` }
+];
+
+/* ===================== LEVEL 1: APPEAL BLITZ ===================== */
+const BLITZ = [
+ {t:"Dr. Lena Ortiz, a children's doctor for 15 years, says kids need at least one hour of exercise every day.", a:"E", why:"A doctor with years of experience is a trusted expert."},
+ {t:"Imagine the joy on a child's face when they open a brand-new book of their very own.", a:"P", why:"\"Imagine\" and \"joy\" are meant to make you feel happy and hopeful."},
+ {t:"The new bike lane will cut travel time to school from 20 minutes to 12 minutes.", a:"L", why:"It compares two exact numbers to prove the bike lane is faster."},
+ {t:"Don't let your little brother down. He's counting on you to be his hero!", a:"P", why:"It uses guilt and pride to make you feel something."},
+ {t:"Our principal, who coached three championship teams, supports the new sports program.", a:"E", why:"The principal's coaching success makes her opinion trustworthy."},
+ {t:"In a survey of 300 students, three out of four said they would join a coding club.", a:"L", why:"Survey numbers are facts used as proof."},
+ {t:"Every night, Maya's family worried as she walked home on the dark, empty street. A streetlight would change everything.", a:"P", why:"A short, worried story (anecdote) makes readers feel concern."},
+ {t:"The American Red Cross recommends that every family keep an emergency supply kit at home.", a:"E", why:"The Red Cross is a trusted organization, so its advice builds credibility."},
+ {t:"Since the school added a water-bottle refill station, plastic bottle trash has dropped by half.", a:"L", why:"It shows a cause and effect with a measurable result."},
+ {t:"As a sixth grader who rides Bus 14 every single day, I know how crowded it really gets.", a:"E", why:"Personal experience makes the speaker believable about this topic."},
+ {t:"If we don't act now, our beautiful beaches could be buried in trash forever.", a:"P", why:"It uses fear of something terrible happening."},
+ {t:"Solar panels would save our school about $8,000 a year, money that could buy 20 new laptops.", a:"L", why:"Numbers and a logical reason prove the idea makes sense."}
+];
+
+/* ===================== LEVEL 2: AD DETECTIVE ===================== */
+const ADS = [
+ {cls:"ad1", html:`<div class="adtitle">SNUGGLE PAWS ANIMAL RESCUE</div><div class="adbig">🐶💔</div>
+   <div class="line">Bella waited 300 days for someone to love her.</div><div class="line">Will YOU be her family?</div>
+   <div class="line" style="font-size:1.3rem">ADOPT. SAVE A LIFE.</div><div class="fine">Open Tuesday–Sunday, 10 a.m. – 5 p.m.</div>`,
+  say:"Ad one. Snuggle Paws Animal Rescue. Bella waited 300 days for someone to love her. Will you be her family? Adopt. Save a life. Open Tuesday through Sunday, 10 a.m. to 5 p.m.",
+  qs:[{id:"ad1a", tag:"P", q:"Which appeal does this ad MAINLY use?", c:["Ethos","Pathos","Logos"], a:1, ex:"The ad wants you to feel sad for Bella and want to rescue her. The \"300 days\" is a number, but it's used to tug at your heart."},
+      {id:"ad1b", tag:"P", q:"Which detail BEST shows this appeal?", c:["\"SNUGGLE PAWS ANIMAL RESCUE\"","\"Bella waited 300 days for someone to love her.\"","\"Open Tuesday–Sunday, 10 a.m. – 5 p.m.\"","\"ADOPT.\""], a:1, ex:"Waiting so long \"for someone to love her\" is meant to make you feel sorry for Bella."}]},
+ {cls:"ad2", html:`<div class="adtitle">BRIGHTSMILE TOOTHPASTE</div><div class="adbig">🦷✨</div>
+   <div class="line">★ Recommended by 9 out of 10 dentists ★</div><div class="line">Trusted by the Sunshine State Dental Club since 1985</div>
+   <div class="fine">*Brightsmile is a made-up brand for this activity.</div>`,
+  say:"Ad two. Brightsmile Toothpaste. Recommended by 9 out of 10 dentists. Trusted by the Sunshine State Dental Club since 1985.",
+  qs:[{id:"ad2a", tag:"E", q:"Which appeal does this ad MAINLY use?", c:["Ethos","Pathos","Logos"], a:0, ex:"Dentists and a dental club are experts. The ad wants you to trust the toothpaste because experts do. Remember the Combo Moves tip!"},
+      {id:"ad2b", tag:"E", q:"Why does the ad mention dentists and a dental club?", c:["To show that experts trust the product, so you should too","To make you feel scared of cavities","To prove the toothpaste is cheaper than others","To tell a story about a dentist"], a:0, ex:"Mentioning experts builds credibility. That's the job of ethos."}]},
+ {cls:"ad3", html:`<div class="adtitle">TURBOCHARGE X PHONE</div><div class="adbig">📱⚡</div>
+   <div class="line">🔋 Battery lasts 48 hours</div><div class="line">⏱ Charges 0–100% in 30 minutes</div><div class="line">🚀 2× faster than last year's model</div>
+   <div class="line" style="color:var(--gold)">The smart choice for busy students.</div><div class="fine">*A made-up product for this activity.</div>`,
+  say:"Ad three. TurboCharge X Phone. Battery lasts 48 hours. Charges zero to 100 percent in 30 minutes. Two times faster than last year's model. The smart choice for busy students.",
+  qs:[{id:"ad3a", tag:"L", q:"Which appeal does this ad MAINLY use?", c:["Ethos","Pathos","Logos"], a:2, ex:"The ad is packed with measurable facts and comparisons. That's logos!"},
+      {id:"ad3b", tag:"L", q:"How do the details support the claim that the phone is \"the smart choice for busy students\"?", c:["They show that a famous person uses the phone.","They give facts that prove the phone saves time and lasts long.","They make readers feel sorry for students.","They describe the phone's bright colors."], a:1, ex:"Long battery life and fast charging are logical reasons the phone would help busy students."}]},
+ {cls:"ad4", html:`<div class="adtitle">🗳️ VOTE JADA FOR CLASS PRESIDENT!</div>
+   <div class="bub">💬 "I've been class treasurer for two years, and I've never missed a single meeting."</div>
+   <div class="bub">💬 "Last year, my bake sale raised $600, enough to pay for two field trip buses."</div>
+   <div class="bub">💬 "You work hard all day. You DESERVE a longer lunch to relax with your friends!"</div>`,
+  say:"Ad four. Vote Jada for class president! Quote one: I've been class treasurer for two years, and I've never missed a single meeting. Quote two: Last year, my bake sale raised 600 dollars, enough to pay for two field trip buses. Quote three: You work hard all day. You deserve a longer lunch to relax with your friends!",
+  qs:[{id:"ad4a", tag:"E", q:"Which line from Jada's poster uses ETHOS?", c:["\"I've been class treasurer for two years, and I've never missed a single meeting.\"","\"Last year, my bake sale raised $600, enough to pay for two field trip buses.\"","\"You DESERVE a longer lunch to relax with your friends!\""], a:0, ex:"Jada's experience and reliability as treasurer make her seem trustworthy."},
+      {id:"ad4b", tag:"P", q:"Which line from Jada's poster uses PATHOS?", c:["\"I've been class treasurer for two years.\"","\"My bake sale raised $600.\"","\"You work hard all day. You DESERVE a longer lunch to relax with your friends!\""], a:2, ex:"\"You deserve\" makes students feel appreciated and excited. That's an emotional appeal."}]}
+];
+
+/* ===================== LEVEL 3: BOSS ===================== */
+const SPEECH = { title:"Let Us Grow: Why Palm Grove Needs a School Garden", by:"A persuasive speech by a sixth-grade student",
+ paras:[
+  "Picture this: the bell rings, and instead of heading to another hour of worksheets, you step outside into the warm sunshine. Rows of bright green lettuce and juicy red tomatoes are waiting for you, tomatoes you planted with your own hands. That is the feeling every student at Palm Grove Middle School deserves. Our school should build a student garden.",
+  "A school garden is not just fun. It helps students learn. Mr. Hassan, who has taught science at Palm Grove for 18 years, explains, \"When students grow plants, they see science happen right in front of them. Lessons about soil, water, and sunlight suddenly make sense.\"",
+  "The numbers support this idea, too. In a survey of 200 Palm Grove students, 146 said they would rather learn science outside. Our neighboring school, Lakeview Middle, started a garden two years ago. Since then, the garden has produced about 300 pounds of vegetables each year for the cafeteria, and science grades at Lakeview have gone up.",
+  "Some people say a garden would cost too much money. However, a local garden club has offered to donate seeds, tools, and soil. The only real cost would be wood for the planting boxes, about $400, which our student council could raise with just one bake sale.",
+  "Think of the students who have never tasted a vegetable picked fresh from the ground, or who feel stressed and need a quiet, peaceful place to breathe. A garden would give them something to be proud of. Let's give every student at Palm Grove a chance to grow. Talk to our principal, sign our petition, and help us plant something amazing."
+ ]};
+const BOSS = [
+ {id:"b1", q:"What is the author's claim in this speech?", p:[1], c:["Students should eat more vegetables.","Palm Grove Middle School should build a student garden.","Science is the most important subject.","Lakeview Middle is a better school than Palm Grove."], a:1, ex:"The last sentence of paragraph 1 states the claim: \"Our school should build a student garden.\""},
+ {id:"b2", tag:"P", q:"Which appeal does the author mainly use in paragraph 1?", p:[1], c:["Ethos, by quoting an expert","Pathos, by helping readers picture a happy, sunny scene","Logos, by giving statistics","Ethos, by describing the author's experience"], a:1, ex:"\"Picture this,\" \"warm sunshine,\" and \"juicy red tomatoes\" create a pleasant image that stirs good feelings."},
+ {id:"b3", tag:"E", q:"Why does the author include the quote from Mr. Hassan in paragraph 2?", p:[2], c:["To build credibility, because an experienced science teacher supports the idea","To make readers feel sorry for Mr. Hassan","To give exact numbers about plant growth","To show that Mr. Hassan disagrees with the garden"], a:0, ex:"A teacher with 18 years of experience is a trustworthy expert. Quoting him is ethos."},
+ {id:"b4", tag:"L", q:"Which appeal is used MOST in paragraph 3?", p:[3], c:["Ethos","Pathos","Logos"], a:2, ex:"Survey results, 300 pounds of vegetables, and Lakeview's results are facts and evidence. That's logos."},
+ {id:"b5", tag:"L", q:"How do the details in paragraph 3 support the author's claim?", p:[3], c:["They show that students and another school have had positive results with gardens.","They prove that Lakeview Middle has the best cafeteria.","They show that the author loves vegetables.","They explain how to plant tomatoes."], a:0, ex:"Students want to learn outside, and a nearby school's garden produces food and helped grades. This is evidence that a garden would work at Palm Grove."},
+ {id:"b6", tag:"L", q:"In paragraph 4, the author responds to people who think a garden costs too much. How does this make the argument stronger?", p:[4], c:["It ignores the problem completely.","It uses facts to show the cost is small and can be covered.","It makes readers feel angry about money.","It proves that gardens are free everywhere."], a:1, ex:"Answering the other side (the counterclaim) with logical facts, like donated supplies and a $400 cost, makes the argument stronger."},
+ {id:"b7", tag:"P", q:"Which sentence from paragraph 5 is the STRONGEST example of pathos?", p:[5], c:["\"Talk to our principal, sign our petition, and help us plant something amazing.\"","\"Think of the students who have never tasted a vegetable picked fresh from the ground, or who feel stressed and need a quiet, peaceful place to breathe.\"","\"Let's give every student at Palm Grove a chance to grow.\"","\"A garden would give them something to be proud of.\""], a:1, ex:"Asking readers to think about stressed students who need a peaceful place stirs sympathy, the strongest emotional pull."},
+ {id:"b8", q:"Why does the author use ethos, pathos, AND logos in the speech?", c:["To make the speech longer","To persuade more people by building trust, giving proof, and connecting to feelings","Because the author could not decide on one appeal","To confuse the principal"], a:1, ex:"Different readers are convinced in different ways. Using all three appeals makes an argument powerful!"}
+];
+
+/* ===================== BADGES ===================== */
+const BADGES = [
+ {k:"academy", i:"🎓", n:"Academy Grad", d:"Finish the training"},
+ {k:"trust", i:"🛡️", n:"Trust Detector", d:"Get every Ethos item right in the Blitz"},
+ {k:"heart", i:"❤️", n:"Heart Reader", d:"Get every Pathos item right in the Blitz"},
+ {k:"logic", i:"🧠", n:"Logic Master", d:"Get every Logos item right in the Blitz"},
+ {k:"combo", i:"🔥", n:"Combo King", d:"Get 5 right in a row"},
+ {k:"speed", i:"⚡", n:"Lightning Reader", d:"Earn 6 speed bonuses"},
+ {k:"detective", i:"🕵️", n:"Ad Detective", d:"Solve 7+ ad clues"},
+ {k:"boss", i:"🐲", n:"Dragon Slayer", d:"Defeat the Dragon of Doubt"},
+ {k:"flawless", i:"💎", n:"Flawless", d:"Beat the boss with all 3 hearts"}
+];
+
+/* Shuffle 4-option MC choices once (fixed seed) */
+(function(){ let seed = 1717; const rnd = () => (seed = (seed*9301 + 49297) % 233280) / 233280;
+  const all = [...ACADEMY.filter(c => c.check).map(c => c.check), ...ADS.flatMap(a => a.qs).filter(q => q.c.length > 3), ...BOSS];
+  all.forEach(q => { const idx = q.c.map((_,j) => j);
+    for(let k = idx.length-1; k > 0; k--){ const r = Math.floor(rnd()*(k+1)); [idx[k],idx[r]] = [idx[r],idx[k]]; }
+    q.c = idx.map(j => q.c[j]); q.a = idx.indexOf(q.a); });
+})();
+
+/* ===================== STATE ===================== */
+let state = null;
+function fresh(n,av){ return {name:n, av, stage:"map", xp:0, coins:20, streak:0, best:0, speedBonus:0, hearts:3, card:0, bi:0, ai:0, bossI:0,
+  ans:{}, pend:{}, zap:{}, badges:{}, started:Date.now(), finished:null}; }
+function skey(n){ return STORE + n.trim().toLowerCase(); }
+function save(){ if(!state) return; try{ localStorage.setItem(skey(state.name), JSON.stringify(state)); localStorage.setItem(STORE+"last", state.name); }catch(e){} }
+function loadFor(n){ try{ const s = localStorage.getItem(skey(n)); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+function lastName(){ try{ return localStorage.getItem(STORE+"last") || ""; }catch(e){ return ""; } }
+
+/* ===================== SOUND FX ===================== */
+let sfxOn = true, actx = null;
+try{ sfxOn = localStorage.getItem(STORE+"sfx") !== "off"; }catch(e){}
+function tone(freq, dur, type, when, vol){ try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+  const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + (when || 0);
+  o.type = type || "sine"; o.frequency.setValueAtTime(freq, t); g.gain.setValueAtTime(vol || .12, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur); }catch(e){} }
+function sfx(kind){ if(!sfxOn) return;
+  if(kind === "good"){ tone(660,.12,"triangle",0); tone(880,.12,"triangle",.1); tone(1320,.18,"triangle",.2); }
+  else if(kind === "bad"){ tone(220,.25,"sawtooth",0,.08); tone(160,.3,"sawtooth",.15,.08); }
+  else if(kind === "click"){ tone(520,.06,"square",0,.05); }
+  else if(kind === "hit"){ tone(140,.15,"square",0,.12); tone(90,.25,"sawtooth",.08,.1); }
+  else if(kind === "win"){ [523,659,784,1047,1319].forEach((f,i) => tone(f,.22,"triangle",i*.12)); }
+  else if(kind === "coin"){ tone(988,.08,"square",0,.06); tone(1319,.15,"square",.08,.06); } }
+function toggleSfx(){ sfxOn = !sfxOn; try{ localStorage.setItem(STORE+"sfx", sfxOn ? "on" : "off"); }catch(e){} document.getElementById("sfxBtn").textContent = sfxOn ? "🎵 On" : "🎵 Off"; if(sfxOn) sfx("click"); }
+document.getElementById("sfxBtn").textContent = sfxOn ? "🎵 On" : "🎵 Off";
+
+/* ===================== SPEECH ===================== */
+let voiceMode = "female", rate = 0.95, flip = false, token = 0;
+const FEM = [/google us english/i,/samantha/i,/\bava\b/i,/allison/i,/susan/i,/aria/i,/jenny/i,/michelle/i,/zira/i,/nicky/i,/female/i];
+const MAL = [/aaron/i,/\bguy\b/i,/christopher/i,/\beric\b/i,/david/i,/\bmark\b/i,/\bevan\b/i,/\btom\b/i,/fred/i,/\balex\b/i,/\bmale\b/i];
+function usVoices(){ try{ return speechSynthesis.getVoices().filter(v => /^en[-_]US/i.test(v.lang)); }catch(e){ return []; } }
+function pick(list){ const vs = usVoices(); for(const re of list){ const v = vs.find(x => re.test(x.name)); if(v) return v; } return null; }
+function chooseVoice(){ let m = voiceMode; if(m === "mixed"){ flip = !flip; m = flip ? "female" : "male"; }
+  const vs = usVoices();
+  if(m === "male") return pick(MAL) || vs.find(v => !FEM.some(r => r.test(v.name))) || pick(FEM) || vs[0] || null;
+  return pick(FEM) || vs[0] || null; }
+function cleanSpeech(t){ return String(t).replace(/ELA\.[A-Z0-9.]+/g,"").replace(/[“”"★✨]/g,"").replace(/—|–/g,", ").replace(/2×/g,"two times").replace(/\$(\d[\d,]*)/g,"$1 dollars").replace(/\s+/g," ").trim(); }
+function chunk(t){ return (t.match(/[^.!?]+[.!?]+["')]*|[^.!?]+$/g) || [t]).map(s => s.trim()).filter(Boolean); }
+function setSpeaking(on){ document.getElementById("stopBtn").classList.toggle("show", on); }
+function clearHL(){ document.querySelectorAll(".para.reading").forEach(e => e.classList.remove("reading")); }
+function stopSpeech(){ token++; try{ speechSynthesis.cancel(); }catch(e){} setSpeaking(false); clearHL(); }
+function speak(items){
+  if(typeof items === "string") items = [{text:items}];
+  if(!("speechSynthesis" in window)){ alert("Read aloud is not available on this browser."); return; }
+  stopSpeech();
+  const my = ++token, voice = chooseVoice(), queue = [];
+  items.forEach(it => chunk(cleanSpeech(it.text)).forEach((c,j) => queue.push({c, el: j===0 ? (it.el||null) : undefined})));
+  let k = 0;
+  const next = () => { if(my !== token) return;
+    if(k >= queue.length){ setSpeaking(false); clearHL(); return; }
+    const q = queue[k++], u = new SpeechSynthesisUtterance(q.c);
+    if(voice){ u.voice = voice; u.lang = voice.lang; } else u.lang = "en-US";
+    u.rate = rate;
+    u.onstart = () => { if(q.el !== undefined){ clearHL(); if(q.el){ q.el.classList.add("reading"); q.el.scrollIntoView({block:"nearest",behavior:"smooth"}); } } };
+    u.onend = next; u.onerror = next; speechSynthesis.speak(u); };
+  setSpeaking(true); setTimeout(next, 80);
+}
+try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; }catch(e){}
+document.getElementById("voiceSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return;
+  voiceMode = b.dataset.v; flip = false; document.querySelectorAll("#voiceSeg button").forEach(x => x.classList.toggle("on", x === b));
+  try{ localStorage.setItem(STORE+"voice", voiceMode); }catch(e){} });
+document.getElementById("rateSeg").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return;
+  rate = parseFloat(b.dataset.r); document.querySelectorAll("#rateSeg button").forEach(x => x.classList.toggle("on", x === b)); });
+try{ const v = localStorage.getItem(STORE+"voice"); if(v){ voiceMode = v; document.querySelectorAll("#voiceSeg button").forEach(x => x.classList.toggle("on", x.dataset.v === v)); } }catch(e){}
+
+/* ===================== HELPERS ===================== */
+const app = document.getElementById("app");
+const L = "ABCD";
+const NAMES = {E:"Ethos", P:"Pathos", L:"Logos"};
+function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function pop(t){ const d = document.createElement("div"); d.className = "pop"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 1200); }
+function toast(t){ const d = document.createElement("div"); d.className = "toast"; d.innerHTML = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3700); }
+function keepScroll(fn){ const y = window.scrollY; fn(); window.scrollTo(0,y); }
+function rankOf(xp){ let r = RANKS[0]; RANKS.forEach(x => { if(xp >= x[0]) r = x; }); return r; }
+function nextRank(xp){ return RANKS.find(x => x[0] > xp); }
+function renderHUD(){ const h = document.getElementById("hud");
+  if(!state){ h.innerHTML = ""; return; }
+  h.innerHTML = `<span class="stat">${state.av} ${esc(state.name)}</span><span class="stat xp">⭐ ${state.xp} XP</span><span class="stat coin">🪙 ${state.coins}</span>${state.streak >= 2 ? `<span class="stat" style="background:linear-gradient(90deg,#ff8a1f,#ff3d7f)">🔥 ${state.streak}</span>` : ""}`; }
+function award(k){ if(state.badges[k]) return; state.badges[k] = true; save(); const b = BADGES.find(x => x.k === k); sfx("win"); toast(`🏅 Badge unlocked: ${b.i} ${b.n}!`); }
+function go(stage){ state.stage = stage; save(); render(); window.scrollTo(0,0); }
+const academyDone = () => ACADEMY.every(c => !c.check || state.ans[c.check.id]) && state.card >= ACADEMY.length - 1;
+const blitzDone = () => BLITZ.every((_,i) => state.ans["bz"+i]);
+const adsDone = () => ADS.every(ad => ad.qs.every(q => state.ans[q.id]));
+const bossDone = () => BOSS.every(q => state.ans[q.id]);
+
+/* scoring: one try. correct = +10 XP (+5 speed bonus in Blitz) (+combo bonus), +5 coins */
+function scoreAnswer(id, ok, tag, extra){
+  const prev = state.streak;
+  state.ans[id] = Object.assign({ok, tag}, extra || {});
+  if(ok){ state.streak++; state.best = Math.max(state.best, state.streak);
+    let gain = 10; if(extra && extra.fast){ gain += 5; state.speedBonus++; }
+    if(state.streak >= 3) gain += 5;
+    state.xp += gain; state.coins += 5; sfx("good");
+    pop(state.streak >= 3 ? `🔥 COMBO x${state.streak}! +${gain}` : (extra && extra.fast ? `⚡ FAST! +${gain}` : `+${gain} XP`));
+    if(state.streak >= 5) award("combo"); if(state.speedBonus >= 6) award("speed");
+  } else { state.streak = 0; sfx("bad"); }
+  save();
+  checkRankUp();
+}
+let rankFromStore = null;
+function checkRankUp(){ const r = rankOf(state.xp)[1]; if(rankFromStore && r !== rankFromStore){ toast(`🎉 RANK UP! You are now a <strong>${r}</strong>!`); sfx("win"); } rankFromStore = r; }
+
+/* ===================== RENDER ===================== */
+function render(){
+  stopSpeech(); renderHUD();
+  if(!state) return renderStart();
+  rankFromStore = rankOf(state.xp)[1];
+  ({map:renderMap, academy:renderAcademy, blitz:renderBlitz, ads:renderAds, boss:renderBoss, victory:renderVictory}[state.stage] || renderMap)();
+}
+
+/* ---------- START ---------- */
+let pickAv = AVATARS[0];
+function renderStart(){
+  app.innerHTML = `<div class="card center title-hero">
+    <div class="trio"><span>🛡️</span><span>❤️</span><span>🧠</span></div>
+    <div class="glow">Persuasion Quest</div>
+    <p style="font-size:1.1rem">Authors have secret powers to <strong>persuade</strong> you. Learn the three rhetorical appeals, earn XP and coins, collect badges, and defeat the <strong>Dragon of Doubt</strong>! 🐲</p>
+    <h3>1. Choose your avatar</h3>
+    <div class="avatars">${AVATARS.map(a => `<button class="${a === pickAv ? "on" : ""}" onclick="pickAv='${a}';sfx('click');renderStart()">${a}</button>`).join("")}</div>
+    <h3>2. Type your name</h3>
+    <div class="row" style="justify-content:center"><input type="text" id="nm" placeholder="First name and last initial" value="${esc(lastName())}" autocomplete="off">
+      <button class="big gold" onclick="startWith()">▶ PLAY</button></div>
+    <p class="muted" style="font-size:.9rem;margin-top:12px">⏱ About 30–35 minutes · 🎓 Training + 3 levels · One try per question · Saves automatically</p>
+    <button class="speak" onclick="speak('Persuasion Quest! Authors have secret powers to persuade you. Learn the three rhetorical appeals, earn X P and coins, collect badges, and defeat the Dragon of Doubt! First, choose your avatar. Then type your name and press Play.')">🔊 Read to me</button>
+  </div>`;
+  document.getElementById("nm").addEventListener("keydown", e => { if(e.key === "Enter") startWith(); });
+}
+function startWith(){ const n = document.getElementById("nm").value.trim();
+  if(n.length < 2){ speak("Please type your name first."); return; }
+  state = loadFor(n) || fresh(n, pickAv); sfx("win"); save(); render(); }
+
+/* ---------- MAP ---------- */
+function renderMap(){
+  const xp = state.xp, r = rankOf(xp), nr = nextRank(xp);
+  const pct = nr ? Math.round((xp - r[0]) / (nr[0] - r[0]) * 100) : 100;
+  const bz = BLITZ.filter((_,i) => state.ans["bz"+i] && state.ans["bz"+i].ok).length;
+  const ad = ADS.flatMap(a => a.qs).filter(q => state.ans[q.id] && state.ans[q.id].ok).length;
+  const bs = BOSS.filter(q => state.ans[q.id] && state.ans[q.id].ok).length;
+  const node = (cls, ic, nm, ds, status, on, locked) => `<button class="node ${cls}" ${locked ? "disabled" : ""} onclick="sfx('click');${on}"><span class="ic">${locked ? "🔒" : ic}</span><span><span class="nm">${nm}</span><br><span class="ds">${ds}</span></span><span class="stt">${status}</span></button>`;
+  app.innerHTML = `<div class="card center" style="margin-bottom:14px">
+    <div class="row between"><h2 style="margin:0">${state.av} ${esc(state.name)}'s Quest Map</h2><button class="speak" onclick="speak('Quest map. Complete each level to unlock the next one. Start with the Training Academy, then the Appeal Blitz, then Ad Detective, and finally the Boss Battle against the Dragon of Doubt.')">🔊 Read</button></div>
+    <div class="row between" style="font-weight:900"><span>🏅 Rank: ${r[1]}</span><span class="muted">${nr ? `${nr[0] - xp} XP to ${nr[1]}` : "MAX RANK!"}</span></div>
+    <div class="rankbar"><div style="width:${pct}%"></div></div>
+  </div>
+  <div class="map center">
+    ${node("n1","🎓","Training Academy","Meet Ethos, Pathos & Logos", academyDone() ? "✅ Complete" : "START", "go('academy')", false)}
+    ${node("n2","⚡","Level 1: Appeal Blitz","12 rapid-fire statements. Speed bonus!", blitzDone() ? `✅ ${bz}/12` : "PLAY", "go('blitz')", !academyDone())}
+    ${node("n3","🕵️","Level 2: Ad Detective","Crack the appeals in 4 ads", adsDone() ? `✅ ${ad}/8` : "PLAY", "go('ads')", !blitzDone())}
+    ${node("n4","🐲","Level 3: Boss Battle","Defeat the Dragon of Doubt", bossDone() ? `✅ ${bs}/8` : "FIGHT", "go('boss')", !adsDone())}
+    ${node("n5","🏆","Victory Hall","Badges, score & report", bossDone() ? "VIEW" : "", "go('victory')", !bossDone())}
+  </div>`;
+}
+
+/* ---------- ACADEMY ---------- */
+function renderAcademy(){
+  const c = state.card, card = ACADEMY[c], ck = card.check, done = ck && state.ans[ck.id];
+  const blocked = ck && !done;
+  let check = "";
+  if(ck){ const sel = done ? done.sel : state.pend[ck.id];
+    check = `<div style="margin-top:14px;border-top:3px dashed var(--line);padding-top:12px">
+      <div class="row between"><h3 style="margin:0">⚔️ ${esc(ck.q)}</h3><button class="speak sm" onclick="readMC(ACADEMY[${c}].check)">🔊 Read</button></div>
+      ${choicesHTML(ck, sel, done, "acPick")}
+      ${done ? fbHTML(ck, done) : `<button class="big pink lockbtn" onclick="acLock()" ${sel === undefined ? "disabled" : ""}>🔒 Lock In (+10 XP)</button>`}</div>`; }
+  app.innerHTML = `<div class="card center">
+    <div class="row between"><span class="muted" style="font-weight:900">🎓 Training ${c+1} of ${ACADEMY.length}</span>
+      <div class="row"><button class="ghost" style="padding:4px 10px;font-size:.85rem" onclick="go('map')">🗺️ Map</button><button class="speak" onclick="speak(ACADEMY[${c}].say)">🔊 Read this to me</button></div></div>
+    <div class="prog">${ACADEMY.map((_,k) => `<span class="${k <= c ? "on" : ""}"></span>`).join("")}</div>
+    <div class="hero ${card.hero.cls}"><div class="face">${card.hero.face}</div><div><div class="hn">${card.hero.name}</div><div class="hw">${card.hero.word}</div></div></div>
+    <h2>${esc(card.title)}</h2>${card.html}${check}
+    <div class="nav"><button class="ghost" onclick="state.card--;save();render()" ${c === 0 ? "disabled" : ""}>⬅ Back</button>
+      ${c < ACADEMY.length-1 ? `<button class="big" onclick="state.card++;save();render();window.scrollTo(0,0)" ${blocked ? "disabled" : ""}>Next ➜</button>`
+        : `<button class="big gold" onclick="finishAcademy()">🎓 Graduate &amp; go to the map</button>`}</div>
+  </div>`;
+}
+function finishAcademy(){ award("academy"); go("map"); }
+function acPick(j){ const ck = ACADEMY[state.card].check; if(state.ans[ck.id]) return; state.pend[ck.id] = j; sfx("click"); save(); keepScroll(renderAcademy); }
+function acLock(){ const ck = ACADEMY[state.card].check, sel = state.pend[ck.id]; if(sel === undefined) return;
+  scoreAnswer(ck.id, sel === ck.a, ck.tag, {sel}); delete state.pend[ck.id]; save(); renderHUD(); keepScroll(renderAcademy); }
+
+/* shared MC pieces */
+function choicesHTML(q, sel, done, fn){
+  const z = state.zap[q.id] || [];
+  return `<div class="choices">${q.c.map((c,j) => { let cls = "choice";
+    if(done){ if(j === q.a) cls += " isright"; else if(j === sel) cls += " iswrong"; }
+    else { if(j === sel) cls += " sel"; if(z.includes(j)) cls += " zapped"; }
+    return `<button class="${cls}" ${done || z.includes(j) ? "disabled" : ""} onclick="${fn}(${j})"><span class="let">${L[j]}</span><span>${esc(c)}</span></button>`; }).join("")}</div>`;
+}
+function fbHTML(q, done){
+  return `<div class="fb ${done.ok ? "good" : "bad"}"><strong>${done.ok ? "✅ Correct!" : "❌ Not quite."}</strong>
+    ${done.ok ? "" : `<div>The answer was <strong>${L[q.a]}</strong>: ${esc(q.c[q.a])}</div>`}<div>${esc(q.ex)}</div>
+    <button class="speak sm" style="margin-top:6px" onclick="speakFB('${q.id}')">🔊 Read explanation</button></div>`;
+}
+function findQ(id){ return [...ACADEMY.filter(c => c.check).map(c => c.check), ...ADS.flatMap(a => a.qs), ...BOSS].find(q => q.id === id); }
+function speakFB(id){ const q = findQ(id), d = state.ans[id]; speak((d.ok ? "Correct! " : "Not quite. The answer was " + L[q.a] + ". " + q.c[q.a] + ". ") + q.ex); }
+function readMC(q, pre){ let t = (pre || "") + q.q + " "; if(q.quote) t += q.quote + " "; q.c.forEach((c,j) => t += " Choice " + L[j] + ". " + c + (/[.!?"]$/.test(c) ? " " : ". ")); speak(t); }
+function zapHTML(q, done){ if(done) return ""; const used = state.zap[q.id];
+  return `<div class="powers"><button class="pw" ${used || state.coins < 10 || q.c.length < 3 ? "disabled" : ""} onclick="useZap('${q.id}')">⚡ Zap a wrong answer (🪙10)</button></div>`; }
+function useZap(id){ const q = findQ(id); if(state.zap[id] || state.coins < 10) return;
+  const wrong = q.c.map((_,j) => j).filter(j => j !== q.a && j !== state.pend[id]); const pickW = wrong[Math.floor(Math.random()*wrong.length)];
+  state.zap[id] = [pickW]; state.coins -= 10; sfx("coin"); save(); renderHUD(); keepScroll(() => ({academy:renderAcademy, ads:renderAds, boss:() => keepPanel(renderBoss)}[state.stage])()); }
+
+/* ---------- LEVEL 1: BLITZ ---------- */
+let blitzStart = 0, blitzTimer = null;
+function renderBlitz(){
+  clearInterval(blitzTimer);
+  const i = state.bi, it = BLITZ[i], d = state.ans["bz"+i];
+  const doneN = BLITZ.filter((_,k) => state.ans["bz"+k]).length;
+  const hb = (k, em, nm, sub) => { let cls = "hb " + k.toLowerCase();
+    if(d){ if(k === it.a) cls += " ring"; else if(k === d.sel) cls += ""; else cls += " dim"; }
+    return `<button class="${cls}" ${d ? "disabled" : ""} onclick="blitzPick('${k}')"><span class="em">${em}</span>${nm}<small>${sub}</small></button>`; };
+  app.innerHTML = `<div class="card center qcard" id="qc">
+    <div class="row between"><h2 style="margin:0">⚡ Appeal Blitz</h2><button class="ghost" style="padding:4px 10px;font-size:.85rem" onclick="go('map')">🗺️ Map</button></div>
+    <p class="muted" style="margin:2px 0 8px">Read the statement. Tap the hero whose power it uses! Answer within <strong>15 seconds</strong> for a ⚡ speed bonus (you can still take your time).</p>
+    <div class="meter"><div style="width:${doneN/BLITZ.length*100}%"></div></div>
+    <div class="qtop"><span class="qnum">Statement ${i+1} of ${BLITZ.length}</span>
+      ${state.streak >= 3 ? `<span class="combo">🔥 COMBO x${state.streak}</span>` : ""}
+      ${d ? "" : `<span class="timer" id="tm">⏱ 0s</span>`}</div>
+    <button class="speak" onclick="speak(BLITZ[${i}].t)">🔊 Read statement</button>
+    <div class="quote">"${esc(it.t)}"</div>
+    <div class="heroBtns">${hb("E","🛡️","ETHOS","trust")}${hb("P","❤️","PATHOS","emotion")}${hb("L","🧠","LOGOS","logic")}</div>
+    ${d ? `<div class="fb ${d.ok ? "good" : "bad"}"><strong>${d.ok ? "✅ Correct! It's " + NAMES[it.a] + "!" : "❌ Not quite. It's " + NAMES[it.a] + "."}</strong><div>${esc(it.why)}</div>
+      <button class="speak sm" style="margin-top:6px" onclick="speak('${d.ok ? "Correct!" : "Not quite."} It is ${NAMES[it.a]}. ' + BLITZ[${i}].why)">🔊 Read why</button></div>
+      <div class="nav"><span></span>${i < BLITZ.length-1 ? `<button class="big" onclick="state.bi++;save();render()">Next ➜</button>`
+        : `<button class="big gold" onclick="finishBlitz()">🏁 Finish Level 1</button>`}</div>` : ""}
+  </div>`;
+  if(!d){ blitzStart = Date.now(); blitzTimer = setInterval(() => { const el = document.getElementById("tm"); if(!el){ clearInterval(blitzTimer); return; }
+    const s = Math.floor((Date.now() - blitzStart)/1000); el.textContent = "⏱ " + s + "s" + (s <= 15 ? " ⚡" : ""); }, 500); }
+}
+function blitzPick(k){ const i = state.bi, it = BLITZ[i]; if(state.ans["bz"+i]) return; clearInterval(blitzTimer);
+  const ok = k === it.a, fast = ok && (Date.now() - blitzStart) <= 15000;
+  scoreAnswer("bz"+i, ok, it.a, {sel:k, fast});
+  if(!ok){ const q = document.getElementById("qc"); q.classList.add("shake"); }
+  renderHUD(); keepScroll(renderBlitz); }
+function finishBlitz(){
+  ["E","P","L"].forEach(t => { const items = BLITZ.map((x,i) => ({x,i})).filter(o => o.x.a === t);
+    if(items.every(o => state.ans["bz"+o.i] && state.ans["bz"+o.i].ok)) award({E:"trust",P:"heart",L:"logic"}[t]); });
+  state.xp += 20; save(); pop("🏁 Level clear! +20"); sfx("win"); setTimeout(() => go("map"), 900); }
+
+/* ---------- LEVEL 2: ADS ---------- */
+function renderAds(){
+  const all = ADS.flatMap((ad,ai) => ad.qs.map((q,qi) => ({ad,ai,q,qi})));
+  const cur = all[state.ai], q = cur.q, done = state.ans[q.id], sel = done ? done.sel : state.pend[q.id];
+  const doneN = all.filter(o => state.ans[o.q.id]).length;
+  app.innerHTML = `<div class="card center">
+    <div class="row between"><h2 style="margin:0">🕵️ Ad Detective</h2><button class="ghost" style="padding:4px 10px;font-size:.85rem" onclick="go('map')">🗺️ Map</button></div>
+    <p class="muted" style="margin:2px 0 8px">Study each ad like a detective. What is it using to persuade you?</p>
+    <div class="meter"><div style="width:${doneN/all.length*100}%"></div></div>
+    <div class="qtop"><span class="qnum">Ad ${cur.ai+1} of ${ADS.length} · Clue ${cur.qi+1} of ${cur.ad.qs.length}</span>${state.streak >= 3 ? `<span class="combo">🔥 COMBO x${state.streak}</span>` : ""}</div>
+    <div class="ad ${cur.ad.cls}">${cur.ad.html}</div>
+    <div class="row"><button class="speak" onclick="speak(ADS[${cur.ai}].say)">🔊 Read the ad</button><button class="speak" onclick="readMC(findQ('${q.id}'))">🔊 Read question</button></div>
+    <p class="stem">${esc(q.q)}</p>
+    ${choicesHTML(q, sel, done, "adPick")}
+    ${done ? fbHTML(q, done) : `<div class="row between">${zapHTML(q, done)}<button class="big pink" onclick="adLock()" ${sel === undefined ? "disabled" : ""}>🔒 Lock In</button></div>`}
+    ${done ? `<div class="nav"><span></span>${state.ai < all.length-1 ? `<button class="big" onclick="state.ai++;save();render();window.scrollTo(0,0)">Next clue ➜</button>` : `<button class="big gold" onclick="finishAds()">🏁 Finish Level 2</button>`}</div>` : ""}
+  </div>`;
+}
+function curAdQ(){ return ADS.flatMap(a => a.qs)[state.ai]; }
+function adPick(j){ const q = curAdQ(); if(state.ans[q.id]) return; state.pend[q.id] = j; sfx("click"); save(); keepScroll(renderAds); }
+function adLock(){ const q = curAdQ(), sel = state.pend[q.id]; if(sel === undefined) return;
+  scoreAnswer(q.id, sel === q.a, q.tag, {sel}); delete state.pend[q.id]; save(); renderHUD(); keepScroll(renderAds); }
+function finishAds(){ const n = ADS.flatMap(a => a.qs).filter(q => state.ans[q.id] && state.ans[q.id].ok).length;
+  if(n >= 7) award("detective"); state.xp += 20; save(); pop("🏁 Level clear! +20"); sfx("win"); setTimeout(() => go("map"), 900); }
+
+/* ---------- LEVEL 3: BOSS ---------- */
+function speechHTML(){ return `<p class="ptitle">${esc(SPEECH.title)}</p><div class="muted" style="font-size:.88rem;margin-bottom:6px">${esc(SPEECH.by)}</div>` +
+  SPEECH.paras.map((t,i) => `<div class="para" id="para${i+1}"><span class="num">${i+1}</span><div><p>${esc(t)}</p><button class="speak sm" onclick="readPara(${i})">🔊 Paragraph ${i+1}</button></div></div>`).join(""); }
+function readPara(i){ speak([{text:"Paragraph " + (i+1) + ". " + SPEECH.paras[i], el:document.getElementById("para"+(i+1))}]); }
+function readSpeech(){ const items = [{text:SPEECH.title + "."}]; SPEECH.paras.forEach((t,i) => items.push({text:t, el:document.getElementById("para"+(i+1))})); speak(items); }
+function gotoPara(n){ const pp = document.getElementById("pp"); if(pp) pp.classList.add("open"); const el = document.getElementById("para"+n); if(!el) return;
+  el.scrollIntoView({block:"center",behavior:"smooth"}); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+function keepPanel(fn){ const pp = document.getElementById("pp"), st = pp ? pp.scrollTop : 0, open = pp && pp.classList.contains("open"); keepScroll(fn); const n = document.getElementById("pp"); if(n){ n.scrollTop = st; if(open) n.classList.add("open"); } }
+function bossHP(){ return BOSS.length - BOSS.filter(q => state.ans[q.id] && state.ans[q.id].ok).length; }
+function renderBoss(){
+  const i = state.bossI, q = BOSS[i], done = state.ans[q.id], sel = done ? done.sel : state.pend[q.id];
+  const hp = bossHP(), dead = bossDone();
+  const looks = (q.p || []).map(n => `<button class="ghost" style="padding:4px 10px;font-size:.85rem" onclick="gotoPara(${n})">📖 Paragraph ${n}</button>`).join(" ");
+  app.innerHTML = `<div class="quizwrap">
+    <aside class="card ppanel" id="pp"><div class="tools"><button class="speak" onclick="readSpeech()">🔊 Read the speech</button><button class="ghost closep" onclick="document.getElementById('pp').classList.remove('open');stopSpeech()">✕ Close</button></div>${speechHTML()}</aside>
+    <section class="card" id="qc">
+      <div class="bosshud"><div class="bossface" id="boss">${dead && hp === 0 ? "💫" : "🐲"}</div>
+        <div><div style="font-family:'Baloo 2';font-weight:800;font-size:1.2rem">Dragon of Doubt</div><div class="hp"><div style="width:${hp/BOSS.length*100}%"></div></div><div style="font-size:.85rem;opacity:.9">HP ${hp}/${BOSS.length}</div></div>
+        <div style="text-align:center"><div class="hearts">${"❤️".repeat(state.hearts)}${"🖤".repeat(3 - state.hearts)}</div><div style="font-size:.75rem">${state.av} your shields</div></div></div>
+      ${i === 0 && !done ? `<div class="tip" style="margin-top:0">🐲 The Dragon of Doubt says, "Nobody can figure out how this speech persuades!" Prove it wrong! <strong>Read the speech</strong>, then answer 8 questions. Each correct answer is a hit. Each wrong answer cracks a shield.</div>` : ""}
+      <div class="qtop"><span class="qnum">Attack ${i+1} of ${BOSS.length}</span>${state.streak >= 3 ? `<span class="combo">🔥 COMBO x${state.streak}</span>` : ""}</div>
+      <div class="row"><button class="speak" onclick="readMC(BOSS[${i}])">🔊 Read question &amp; answers</button>
+        <button class="ghost togglep" style="padding:4px 10px;font-size:.85rem" onclick="document.getElementById('pp').classList.add('open')">📖 Show speech</button>${looks}</div>
+      <p class="stem">${esc(q.q)}</p>
+      ${choicesHTML(q, sel, done, "bossPick")}
+      ${done ? fbHTML(q, done) : `<div class="row between">${zapHTML(q, done)}<button class="big pink" onclick="bossLock()" ${sel === undefined ? "disabled" : ""}>⚔️ ATTACK!</button></div>`}
+      ${done ? `<div class="nav"><span></span>${i < BOSS.length-1 ? `<button class="big" onclick="state.bossI++;save();render();window.scrollTo(0,0)">Next attack ➜</button>` : `<button class="big gold" onclick="finishBoss()">🏆 Enter the Victory Hall</button>`}</div>` : ""}
+    </section></div>`;
+}
+function bossPick(j){ const q = BOSS[state.bossI]; if(state.ans[q.id]) return; state.pend[q.id] = j; sfx("click"); save(); keepPanel(renderBoss); }
+function bossLock(){ const q = BOSS[state.bossI], sel = state.pend[q.id]; if(sel === undefined) return;
+  const ok = sel === q.a; scoreAnswer(q.id, ok, q.tag, {sel}); delete state.pend[q.id];
+  if(!ok){ state.hearts = Math.max(0, state.hearts - 1); const f = document.createElement("div"); f.className = "flashred"; document.body.appendChild(f); setTimeout(() => f.remove(), 600); }
+  save(); renderHUD(); keepPanel(renderBoss);
+  if(ok){ sfx("hit"); const b = document.getElementById("boss"); if(b){ b.classList.add("hit"); } } }
+function finishBoss(){ award("boss"); if(state.hearts === 3) award("flawless");
+  state.xp += 40; state.finished = state.finished || Date.now(); save(); go("victory"); }
+
+/* ---------- VICTORY ---------- */
+function renderVictory(){
+  const ids = [...ACADEMY.filter(c => c.check).map(c => c.check.id), ...BLITZ.map((_,i) => "bz"+i), ...ADS.flatMap(a => a.qs).map(q => q.id), ...BOSS.map(q => q.id)];
+  const right = ids.filter(id => state.ans[id] && state.ans[id].ok).length, total = ids.length, pct = Math.round(right/total*100);
+  const acc = t => { const xs = Object.values(state.ans).filter(a => a.tag === t); const r = xs.filter(a => a.ok).length; return xs.length ? Math.round(r/xs.length*100) + "%" : "—"; };
+  const lvl = (name, list) => `${name}: ${list.filter(id => state.ans[id] && state.ans[id].ok).length}/${list.length}`;
+  const missedBoss = BOSS.map((q,i) => (state.ans[q.id] && !state.ans[q.id].ok) ? i+1 : null).filter(Boolean);
+  app.innerHTML = `<div class="card center" style="text-align:center">
+    <div style="font-size:4rem;line-height:1">🏆</div>
+    <h2>VICTORY, ${esc(state.name)}!</h2>
+    <p style="font-size:1.1rem;margin:0">${state.av} Rank: <strong>${rankOf(state.xp)[1]}</strong></p>
+    <div class="row" style="justify-content:center;margin:10px 0"><span class="stat xp" style="color:#fff;font-size:1.1rem">⭐ ${state.xp} XP</span><span class="stat" style="background:#fff3c4;color:#7a5200;font-size:1.1rem">🪙 ${state.coins}</span><span class="stat" style="background:#ffe1ea;color:#b0124c;font-size:1.1rem">🔥 Best streak ${state.best}</span></div>
+    <div style="font-family:'Baloo 2';font-size:2.6rem;font-weight:800;color:var(--night2);line-height:1">${right} / ${total}</div><div class="muted">${pct}% correct</div>
+    <h3 style="margin-top:14px">Your Appeal Power</h3>
+    <div class="acc"><div style="background:var(--eth)"><b>${acc("E")}</b>🛡️ Ethos</div><div style="background:var(--pat)"><b>${acc("P")}</b>❤️ Pathos</div><div style="background:var(--log)"><b>${acc("L")}</b>🧠 Logos</div></div>
+    <h3>Badges</h3>
+    <div class="badges">${BADGES.map(b => `<div class="bdg ${state.badges[b.k] ? "got" : ""}"><div class="bi">${b.i}</div><div class="bn">${b.n}</div><div class="bd">${b.d}</div></div>`).join("")}</div>
+    <div class="tip" style="text-align:left"><strong>👩‍🏫 Show your teacher this screen.</strong><br>
+      Skill: Rhetorical Appeals (Ethos, Pathos, Logos)<br>
+      ${lvl("Academy checks", ACADEMY.filter(c => c.check).map(c => c.check.id))} · ${lvl("Blitz", BLITZ.map((_,i) => "bz"+i))} · ${lvl("Ad Detective", ADS.flatMap(a => a.qs).map(q => q.id))} · ${lvl("Boss", BOSS.map(q => q.id))}<br>
+      Total: ${right}/${total} (${pct}%) · Boss questions missed: ${missedBoss.length ? missedBoss.join(", ") : "none 🎉"}<br>
+      Finished: ${esc(new Date(state.finished || Date.now()).toLocaleString())}</div>
+    <div class="row" style="justify-content:center">
+      <button class="speak" onclick="speak('Victory, ${esc(state.name).replace(/'/g,"")}! You got ${right} out of ${total} correct and earned ${state.xp} X P. Your rank is ${rankOf(state.xp)[1]}. Show your teacher this screen.')">🔊 Read my results</button>
+      <button class="ghost" onclick="copyResults(${right},${total})">📋 Copy my results</button>
+      <button class="ghost" onclick="go('map')">🗺️ Back to map</button></div>
+  </div>`;
+  sfx("win"); confetti();
+}
+function copyResults(r,t){ const s = `${state.name} | Rhetorical Appeals | ${r}/${t} (${Math.round(r/t*100)}%) | ${state.xp} XP | Rank: ${rankOf(state.xp)[1]}`;
+  try{ navigator.clipboard.writeText(s).then(() => pop("Copied! 📋")); }catch(e){ prompt("Copy your results:", s); } }
+function confetti(){ const cv = document.getElementById("confetti"), ctx = cv.getContext("2d"); cv.width = innerWidth; cv.height = innerHeight;
+  const colors = ["#ffc83d","#2f7bff","#ff3d7f","#14b86a","#8b5cff","#2ee6ff"];
+  const ps = Array.from({length:200}, () => ({x:Math.random()*cv.width, y:-20-Math.random()*cv.height*.6, r:5+Math.random()*7, c:colors[Math.floor(Math.random()*6)], vy:2+Math.random()*3.5, vx:-1.5+Math.random()*3, a:Math.random()*6}));
+  let f = 0; (function tick(){ ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p => { p.y += p.vy; p.x += p.vx; p.a += .1; ctx.fillStyle = p.c; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6); ctx.restore(); });
+    if(++f < 300) requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height); })(); }
+
+/* ---------- TEACHER ---------- */
+function teacherReset(){ const pin = prompt("Teacher PIN:"); if(pin === null) return; if(pin !== TEACHER_PIN){ alert("Incorrect PIN."); return; }
+  const who = prompt("Type the student's name to reset (or ALL to reset every student on this device):", state ? state.name : ""); if(!who) return;
+  try{ if(who.trim().toUpperCase() === "ALL") Object.keys(localStorage).filter(k => k.startsWith(STORE)).forEach(k => localStorage.removeItem(k)); else localStorage.removeItem(skey(who)); }catch(e){}
+  state = null; render(); }
+
+/* ---------- BOOT ---------- */
+(function(){ const n = lastName(); if(n){ const s = loadFor(n); if(s){ state = s; pickAv = s.av; } } render(); })();
+</script>
+</body>
+</html>
